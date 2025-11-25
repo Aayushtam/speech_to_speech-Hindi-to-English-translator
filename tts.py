@@ -40,16 +40,16 @@ def play_audio_from_base64(b64_string):
     except Exception as e:
         print(f"❌ Error playing audio: {e}")
 
-def text_to_speech_stream(text):
+def text_to_speech_stream(text, target_language_code="hi-IN", speaker="manisha"):
     """Sends text to Sarvam AI and plays the result."""
     print(f"📤 Generating TTS for: '{text}'")
 
     payload = {
         "inputs": [text],
-        "target_language_code": "hi-IN",
-        "speaker": "manisha", 
+        "target_language_code": target_language_code,
+        "speaker": speaker,
         "audio_config": None,
-        "model": "bulbul:v2",
+        "model": "vani:v2" if target_language_code == "en-IN" else "bulbul:v2",
         "enable_preprocessing": True
     }
 
