@@ -1,0 +1,6 @@
+transformers
+sounddevice
+scipy
+requests
+numpy
+torch
