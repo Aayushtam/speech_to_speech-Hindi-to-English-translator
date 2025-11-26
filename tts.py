@@ -22,9 +22,12 @@ HEADERS = {
     # If you have a specific API Key, add it here like: "api-subscription-key": "YOUR_KEY"
 }
 
-def play_audio_from_base64(b64_string):
+def play_audio_from_base64(b64_string, is_speaking_event=None):
     """Decodes base64 string and plays audio immediately."""
     try:
+        if is_speaking_event:
+            is_speaking_event.set()
+
         # 1. Decode the Base64 string to bytes
         audio_bytes = base64.b64decode(b64_string)
         
@@ -39,17 +42,20 @@ def play_audio_from_base64(b64_string):
         
     except Exception as e:
         print(f"❌ Error playing audio: {e}")
+    finally:
+        if is_speaking_event:
+            is_speaking_event.clear()
 
-def text_to_speech_stream(text):
+def text_to_speech_stream(text, target_language_code="hi-IN", speaker="manisha", is_speaking_event=None):
     """Sends text to Sarvam AI and plays the result."""
     print(f"📤 Generating TTS for: '{text}'")
 
     payload = {
         "inputs": [text],
-        "target_language_code": "hi-IN",
-        "speaker": "manisha", 
+        "target_language_code": target_language_code,
+        "speaker": speaker,
         "audio_config": None,
-        "model": "bulbul:v2",
+        "model": "vani:v2" if target_language_code == "en-IN" else "bulbul:v2",
         "enable_preprocessing": True
     }
 
@@ -62,7 +68,7 @@ def text_to_speech_stream(text):
         if "audios" in data and len(data["audios"]) > 0:
             # Extract base64 string
             b64_audio = data["audios"][0]
-            play_audio_from_base64(b64_audio)
+            play_audio_from_base64(b64_audio, is_speaking_event)
         else:
             print("⚠️ No audio data found in response.")
             print(data)

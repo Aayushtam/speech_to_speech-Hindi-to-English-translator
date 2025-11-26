@@ -39,7 +39,7 @@ def send_to_sarvam(filepath):
         except requests.exceptions.RequestException as e:
             return {"error": str(e), "details": res.text if 'res' in locals() else "No response"}
 
-def voice_triggered_transcription():
+def voice_triggered_transcription(callback=None, is_speaking_event=None):
     print("\n🎙  Microphone initialized.")
     print(f"🗣  Speak now! (Waiting for {SILENCE_GAP}s silence to transcribe)")
     print("🛑 Press Ctrl+C to stop.\n")
@@ -51,6 +51,11 @@ def voice_triggered_transcription():
     try:
         with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, dtype="int16") as stream:
             while True:
+                # If the TTS is speaking, pause the STT loop
+                if is_speaking_event and is_speaking_event.is_set():
+                    time.sleep(0.1) # Avoid busy-waiting
+                    continue
+
                 frame, _ = stream.read(BLOCK_SIZE)
                 frame = frame.flatten()
 
@@ -87,7 +92,10 @@ def voice_triggered_transcription():
                             response = send_to_sarvam(filepath)
                             
                             if "transcript" in response:
-                                print(f"📝 Transcript: {response['transcript']}")
+                                transcript = response['transcript']
+                                print(f"📝 Transcript: {transcript}")
+                                if callback:
+                                    callback(transcript)
                             else:
                                 print(f"❌ Error: {response}")
 
